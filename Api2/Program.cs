@@ -19,6 +19,9 @@ namespace Api2
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+#if !DEBUG
+                 .UseUrls("172.20.10.9:5002")
+#endif
                 .UseStartup<Startup>();
     }
 }

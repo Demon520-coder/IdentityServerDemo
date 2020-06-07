@@ -19,6 +19,9 @@ namespace MvcClient
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+#if !DEBUG
+                .UseUrls("192.169.148.100:5003")
+#endif
                 .UseStartup<Startup>();
     }
 }

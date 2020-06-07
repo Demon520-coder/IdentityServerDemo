@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentityServer4.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -35,9 +36,16 @@ namespace Idsrv4
 
             //添加IdentityServer中间件
             services.AddIdentityServer()
+                    .AddProfileService<ProfileService>()
                     .AddInMemoryApiResources(InMemoeryConfig.GetApiResources())
                     .AddInMemoryClients(InMemoeryConfig.GetClients())
+                   
                     .AddDeveloperSigningCredential();
+
+            services.AddTransient<IProfileService, ProfileService>();
+
+            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

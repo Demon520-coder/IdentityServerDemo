@@ -1,5 +1,8 @@
 ﻿using IdentityModel.Client;
+using ProtoBuf;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -7,16 +10,45 @@ namespace TestClient
 {
     class Program
     {
+
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            await ApiTest("http://localhost:5001/api/values");
+            //Console.WriteLine("Hello World!");
+            //var input = Console.ReadLine();
+            //if (input == "1")
+            //{
+            //    await ApiTest("http://localhost:5001/api/values");
+            //}
+
+            //Console.ReadKey();
+            HttpClient client = new HttpClient();
+            Stopwatch stopwatch = new Stopwatch();
+            var result = await client.GetStreamAsync("http://localhost:5005/home/protobtest");
+            stopwatch.Start();
+            var students = Serializer.Deserialize<IEnumerable<Student>>(result);
+            stopwatch.Stop();
+            double sec = stopwatch.Elapsed.TotalSeconds;
+            Console.WriteLine($"protobuffer.sec={sec}");
+            stopwatch.Reset();
+            client = new HttpClient();
+            var jsonResult = await client.GetStringAsync("http://localhost:5005/home/jsontest");
+            stopwatch.Start();
+            students = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<Student>>(jsonResult);
+            stopwatch.Stop();
+            sec = stopwatch.Elapsed.TotalSeconds;
+            Console.WriteLine($"json.sec={sec}");
+            //foreach (var item in students)
+            //{
+            //    Console.WriteLine($"{nameof(item.Name)}={item.Name},{nameof(item.Age)}={item.Age},{nameof(item.Gender)}={item.Gender}");
+
+            //}
+
         }
 
 
         static async Task ApiTest(string apiUrl)
         {
-            
+
             using (var discoveryClient = new HttpClient())
             {
                 DiscoveryDocumentRequest req = new DiscoveryDocumentRequest();
@@ -42,6 +74,7 @@ namespace TestClient
                     GrantType = IdentityModel.OidcConstants.GrantTypes.ClientCredentials
                 };
 
+
                 //获取token
                 var tokenResponse = await discoveryClient.RequestClientCredentialsTokenAsync(tokenRequest);
 
@@ -53,11 +86,16 @@ namespace TestClient
                     return;
                 }
 
+                Console.WriteLine(tokenResponse.AccessToken);
+
                 using (var apiClient = new HttpClient())
                 {
                     //设置token
                     apiClient.SetBearerToken(tokenResponse.AccessToken);
                     //请求api
+                    var temp = await apiClient.GetStringAsync(discovery.UserInfoEndpoint);
+
+
                     var result = await apiClient.GetStringAsync(apiUrl);
 
                     Console.WriteLine("======apiResult=======" + nl);

@@ -28,11 +28,17 @@ namespace Api1
             services.AddAuthentication("Bearer")
                     .AddIdentityServerAuthentication(option =>
                     {
+#if !DEBUG
+                        option.Authority = "http://172.20.10.9:5000";
+#endif
                         option.Authority = "http://localhost:5000";
                         option.RequireHttpsMetadata = false;
                         option.ApiName = "ApiRes1";
+                        
+                        option.SupportedTokens = IdentityServer4.AccessTokenValidation.SupportedTokens.Jwt;
+                        
                     });
-
+           
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
